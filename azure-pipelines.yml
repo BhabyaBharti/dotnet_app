@@ -1,6 +1,6 @@
 trigger: none
 
-pool: Azure Pipelines
+pool: sh-app-delivery-pool
 
 stages:
   - stage: Scan
