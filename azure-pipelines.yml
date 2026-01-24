@@ -1,0 +1,18 @@
+trigger: none
+
+pool: Azure Pipelines
+
+stages:
+  - stage: Scan
+    displayName: Scan Dotnet
+    jobs:
+      - job: UnitTesting
+        displayName: Unit Testing
+
+        steps:
+          - task: DotNetCoreCLI@2
+            displayName: Test .Net
+            inputs:
+              command: 'test'
+              projects: '$(System.DefaultWorkingDirectory)'
+              testRunTitle: 'Test .Net'
