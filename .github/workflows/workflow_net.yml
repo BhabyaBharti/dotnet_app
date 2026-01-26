@@ -1,0 +1,82 @@
+name: CICD for GutHub Workflow
+
+on:
+  #push:
+    #branches:
+      #- main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  test_backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkoutcode@v4
+
+      - name: SetUp .Net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Test
+        run: dotnet test --no-build
+
+ build_backend:
+   needs: test_backend
+   runs-on: ubuntu-latest
+
+   steps:
+      - name: SetUp .Net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+        
+      - name: Build
+        run: build dotnet build --configuration Release --no-restore
+
+      - name: 
+
+   test_frontend:
+     runs-on: ubuntu-latest
+
+     steps:
+       - name: Checkout Code
+         uses: actions/checkout@v4
+
+       - name: Setup Node.js
+         uses: actions/setup-node@v4
+         with:
+           node-version: '18'
+
+       - name: Install Frontend Dependencies
+         working-directory:
+         run: npm install
+
+       - name: Run Frontend Tests
+         working-directory: 
+         run: npm test --watchAll=false
+
+    build_frontend:
+      needs: test_frontend
+      runs-on: ubuntu-latest
+      steps:
+        - name: Build Frontend
+          working-directory:
+          run: npm run build
+
+        - name: Upload Artifacts
+          working-directory:
+          run: 
+      
+      
