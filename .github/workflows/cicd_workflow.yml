@@ -20,7 +20,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping - h localhost"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -35,15 +35,17 @@ jobs:
         node-version: '18'
 
     - name: Install Frontend Dependencies
-      working-directory:
+      working-directory: './elearn-frontend'
       run: npm install
 
     - name: Run frontend tests
-      working-directory:
+      working-directory: './elearn-frontend'
+      env:
+        CI: true
       run: npm test -- --watchAll=false
 
     - name: Build Frontend
-      working-directory:
+      working-directory: './elearn-frontend'
       run: npm run build
 
     - name: Setup .Net
@@ -52,24 +54,31 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore Backend Dependencies
-      working-directory:
+      working-directory: './elearn-backend'
       run: dotnet restore
 
     - name: Build .Net (Backend)
-      working-directory:
+      working-directory: './elearn-backend'
       run: dotnet build --configuration Release --no-restore
 
     - name: Run .Net Tests
-      working-directory:
+      working-directory: './elearn-backend'
       env:
-        connectionStrings_DefaultConnection: "Server=mysql;Database=elearn_db;User=root;Password=root;"
+        connectionStrings_DefaultConnection: "Server=127.0.0.1;Port=3306;Database=elearn_db;User=root;Password=root;"
       run: dotnet test --no-build --verbosity normal
 
   build-push-to-acr:
     runs-on: ubuntu-latest
+    needs: build-test
+
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
-      - name: Login to Azure
-        uses: azure/login@v1
+      - name: Login to Azure (OIDC)
+        uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
